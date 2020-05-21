@@ -192,10 +192,14 @@ public class World {
     }
 
     public Tile getTile(Position position) {
-        return tiles[position.getX()][position.getY()];
+        return getTile(position.getX(), position.getY());
     }
 
     public Tile getTile(int x, int y) {
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        if (x > getWidth() - 1) x = getWidth() - 1;
+        if (y > getHeight() - 1) y = getHeight() - 1;
         return tiles[x][y];
     }
 

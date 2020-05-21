@@ -1,12 +1,13 @@
 package powder.tiles;
 
 import powder.position.Direction;
-import powder.util.Randomizer;
+import powder.position.Position;
 import powder.World;
+import powder.util.Randomizer;
 
 public abstract class LiquidTile extends Tile {
-    private int horizontalMovementTicks = 0;
-    private Direction preferredHorizontalDirection = null;
+    private int extraneousTicks = 0;
+    private Direction randomDirection = null;
 
     public LiquidTile(World world) {
         super(world);
@@ -32,19 +33,6 @@ public abstract class LiquidTile extends Tile {
         return true;
     }
 
-    private boolean isSolidAndHasGravity(Tile t) {
-        return t.isSolid() && t.hasGravity() && !(t instanceof LiquidTile);
-    }
-
-    private boolean isNotSolidAndNotWater(Tile t) {
-        return !t.isSolid() && !(t instanceof LiquidTile);
-    }
-
-    private void resetHorizontal() {
-        horizontalMovementTicks = 0;
-        preferredHorizontalDirection = null;
-    }
-
     protected boolean floatsOn(Tile tile) {
         return tile instanceof LiquidTile && ((LiquidTile) tile).getBuoyancy() < getBuoyancy();
     }
@@ -53,18 +41,113 @@ public abstract class LiquidTile extends Tile {
         return tile.isAir() || (tile instanceof OilTile && ((LiquidTile) tile).getBuoyancy() > getBuoyancy());
     }
 
-    protected boolean isPushingDown(Tile tile) {
-        return tile.hasGravity();
+    private boolean isRowFull(int x, int y) {
+        for (int i = x; i > 0; i--) {
+            Tile tile = getWorld().getTile(new Position(i, y));
+            if (!isSimilarLiquid(tile)) {
+                if (!tile.isSolid()) {
+                    return false;
+                }
+                break;
+            }
+        }
+        for (int i = x; i < getWorld().getWidth() - 1; i++) {
+            Tile tile = getWorld().getTile(new Position(i, y));
+            if (!isSimilarLiquid(tile)) {
+                if (!tile.isSolid()) {
+                    return false;
+                }
+                break;
+            }
+        }
+        return true;
+    }
+
+    private boolean rowHasLiquid(int x, int y) {
+        for (int i = x; i > 0; i--) {
+            Tile tile = getWorld().getTile(new Position(i, y));
+            if (isSimilarLiquid(tile)) {
+                return true;
+            }
+            if (tile.isSolid()) {
+                break;
+            }
+        }
+        for (int i = x; i < getWorld().getWidth() - 1; i++) {
+            Tile tile = getWorld().getTile(new Position(i, y));
+            if (isSimilarLiquid(tile)) {
+                return true;
+            }
+            if (tile.isSolid()) {
+                break;
+            }
+        }
+        return false;
+    }
+
+    private boolean isExtraneous() {
+//        We are considered extraneous if:
+//         - our row is not full
+//         - row below us is full
+//         - no liquid above us
+
+        return !rowHasLiquid(getPosition().getX(), getPosition().getY() + 1) &&
+                !isRowFull(getPosition().getX(), getPosition().getY()) &&
+                isRowFull(getPosition().getX(), getPosition().getY() - 1);
+    }
+
+    private Direction getFlowingDirection() {
+        Tile leftTile = null;
+        Tile rightTile = null;
+
+        for (int x = getPosition().getX(); x > 0; x--) {
+            Tile tile = getWorld().getTile(new Position(x, getPosition().getY() - 1));
+            if (!isSimilarLiquid(tile)) {
+                if (!tile.isSolid()) {
+                    leftTile = tile;
+                }
+                break;
+            }
+        }
+
+        for (int x = getPosition().getX(); x < getWorld().getWidth() - 1; x++) {
+            Tile tile = getWorld().getTile(new Position(x, getPosition().getY() - 1));
+            if (!isSimilarLiquid(tile)) {
+                if (!tile.isSolid()) {
+                    rightTile = tile;
+                }
+                break;
+            }
+        }
+
+        if (leftTile == null && rightTile == null) return null;
+
+        if (rightTile == null) return Direction.Left;
+        if (leftTile == null) return Direction.Right;
+
+        int leftDistance = Math.abs(leftTile.getPosition().getX() - getPosition().getX());
+        int rightDistance = Math.abs(rightTile.getPosition().getX() - getPosition().getX());
+
+        if (rightDistance < leftDistance) return Direction.Right;
+        return Direction.Left;
+    }
+
+    private boolean isSimilarLiquid(Tile tile) {
+        return tile instanceof LiquidTile && ((LiquidTile) tile).getBuoyancy() == getBuoyancy();
     }
 
     @Override
     public void update() {
-//        Check evaporation
-        if (horizontalMovementTicks > 100) {
-            if (getEvaporationChance() > 0 && Randomizer.nextDouble() < getEvaporationChance()) {
-                evaporate();
-                return;
+        if (isExtraneous()) {
+            extraneousTicks++;
+            if (extraneousTicks > 100) {
+                if (Randomizer.nextDouble() < getEvaporationChance()) {
+                    evaporate();
+                    return;
+                }
             }
+        } else {
+            extraneousTicks = 0;
         }
 
 //        Check for floating
@@ -75,105 +158,66 @@ public abstract class LiquidTile extends Tile {
 
 //        Always move down, if possible.
         if (canDisplace(getWorld().getTile(getPosition().down()))) {
-            if (preferredHorizontalDirection == null) {
-//                Check for being pushed from above
-                if (isPushingDown(getWorld().getTile(getPosition().up()))) {
-                    if (canDisplace(getWorld().getTile(getPosition().left()))) {
-                        getWorld().swapTiles(getPosition(), getPosition().left());
-                        preferredHorizontalDirection = Direction.Left;
-                        return;
-                    }
-                    if (canDisplace(getWorld().getTile(getPosition().right()))) {
-                        getWorld().swapTiles(getPosition(), getPosition().right());
-                        preferredHorizontalDirection = Direction.Right;
-                        return;
-                    }
-//                    if (moved) {
-//                        for (int i = 0; i < 2; i++) {
-//                            if (canDisplace(getWorld().getTile(getPosition().direction(preferredHorizontalDirection)))) {
-//                                getWorld().swapTiles(getPosition(), getPosition().direction(preferredHorizontalDirection));
-//                            }
-//                        }
-//                        return;
-//                    }
-                }
-            } else {
-                if (isPushingDown(getWorld().getTile(getPosition().up()))) {
-                    if (canDisplace(getWorld().getTile(getPosition().down().direction(preferredHorizontalDirection)))) {
-                        getWorld().swapTiles(getPosition(), getPosition().down().direction(preferredHorizontalDirection));
-                    } else {
-                        preferredHorizontalDirection = null;
-                    }
-                }
-            }
             getWorld().swapTiles(getPosition(), getPosition().down());
-            resetHorizontal();
             return;
         }
 
-//        Always move diagonally, if possible.
+//        Diagonal movement, if possible.
         if (canDisplace(getWorld().getTile(getPosition().down().right()))) {
             getWorld().swapTiles(getPosition(), getPosition().down().right());
-            resetHorizontal();
             return;
         }
         if (canDisplace(getWorld().getTile(getPosition().down().left()))) {
             getWorld().swapTiles(getPosition(), getPosition().down().left());
-            resetHorizontal();
             return;
         }
 
-//        Move horizontally if being pushed from above
-        if (isPushingDown(getWorld().getTile(getPosition().up()))) {
-            if (canDisplace(getWorld().getTile(getPosition().left()))) {
-                getWorld().swapTiles(getPosition(), getPosition().left());
-                preferredHorizontalDirection = Direction.Left;
-                return;
-            }
-            if (canDisplace(getWorld().getTile(getPosition().right()))) {
-                getWorld().swapTiles(getPosition(), getPosition().right());
-                preferredHorizontalDirection = Direction.Right;
+//        Detect flow direction
+        if (isSimilarLiquid(getWorld().getTile(getPosition().down())) && !isSimilarLiquid(getWorld().getTile(getPosition().up()))) {
+            Direction d = getFlowingDirection();
+            if (d != null) {
+                if (getWorld().getTile(getPosition().direction(d).down()).isAir()) {
+                    getWorld().swapTiles(getPosition(), getPosition().direction(d).down());
+                } else {
+                    getWorld().swapTiles(getPosition(), getPosition().direction(d));
+                }
                 return;
             }
         }
 
-//        Move horizontally on own, if possible.
-        if (preferredHorizontalDirection != null) {
-            if (canDisplace(getWorld().getTile(getPosition().direction(preferredHorizontalDirection)))) {
-                getWorld().swapTiles(getPosition(), getPosition().direction(preferredHorizontalDirection));
-                horizontalMovementTicks++;
+//        Random horizontal movement
+        if (randomDirection != null) {
+            if (canDisplace(getWorld().getTile(getPosition().direction(randomDirection)))) {
+                getWorld().swapTiles(getPosition(), getPosition().direction(randomDirection));
                 return;
             }
         }
-        if (Randomizer.nextBoolean()) {
-            if (canDisplace(getWorld().getTile(getPosition().right()))) {
-                getWorld().swapTiles(getPosition(), getPosition().right());
-                preferredHorizontalDirection = Direction.Right;
-                horizontalMovementTicks++;
-                return;
+        Tile right = getWorld().getTile(getPosition().right());
+        Tile left = getWorld().getTile(getPosition().left());
+        if (right.isAir() && left.isAir()) {
+            if (Randomizer.nextBoolean()) {
+                randomDirection = Direction.Right;
+                getWorld().swapTiles(getPosition(), right.getPosition());
+            } else {
+                randomDirection = Direction.Left;
+                getWorld().swapTiles(getPosition(), left.getPosition());
             }
-            if (canDisplace(getWorld().getTile(getPosition().left()))) {
-                getWorld().swapTiles(getPosition(), getPosition().left());
-                preferredHorizontalDirection = Direction.Left;
-                horizontalMovementTicks++;
-                return;
-            }
-        } else {
-            if (canDisplace(getWorld().getTile(getPosition().left()))) {
-                getWorld().swapTiles(getPosition(), getPosition().left());
-                preferredHorizontalDirection = Direction.Left;
-                horizontalMovementTicks++;
-                return;
-            }
-            if (canDisplace(getWorld().getTile(getPosition().right()))) {
-                getWorld().swapTiles(getPosition(), getPosition().right());
-                preferredHorizontalDirection = Direction.Right;
-                horizontalMovementTicks++;
-                return;
-            }
+            return;
+        }
+        if (right.isAir() && !left.isAir()) {
+            randomDirection = Direction.Right;
+            getWorld().swapTiles(getPosition(), right.getPosition());
+            return;
+        }
+        if (left.isAir() && !right.isAir()) {
+            randomDirection = Direction.Left;
+            getWorld().swapTiles(getPosition(), left.getPosition());
+            return;
         }
 
 //        If we have gotten to this point, we should become dormant.
+//        This means that we are completely enclosed in water, both sides and at least bottom
+//        If we need to evaporate we will be awoken by a neighbor
         setActive(false);
     }
 }
