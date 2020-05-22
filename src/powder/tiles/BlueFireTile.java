@@ -17,7 +17,10 @@ public class BlueFireTile extends FireTile {
         if (tile.isImmutable()) {
             return 0;
         }
-        return 1 - tile.getFlammability();
+        if (tile.getFlammability() == 0) {
+            return 0.5;
+        }
+        return 0;
     }
 
     @Override

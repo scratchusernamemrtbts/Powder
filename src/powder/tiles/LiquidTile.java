@@ -41,11 +41,15 @@ public abstract class LiquidTile extends Tile {
         return tile.isAir() || (tile instanceof LiquidTile && ((LiquidTile) tile).getBuoyancy() > getBuoyancy());
     }
 
+    protected boolean canPush(Tile tile) {
+        return tile.isAir() || (tile instanceof LiquidTile && ((LiquidTile) tile).getBuoyancy() > getBuoyancy());
+    }
+
     private boolean isRowFull(int x, int y) {
         for (int i = x; i > 0; i--) {
             Tile tile = getWorld().getTile(new Position(i, y));
             if (!isSimilarLiquid(tile)) {
-                if (tile.isAir()) {
+                if (tile.isAir() || isDifferentLiquid(tile)) {
                     return false;
                 }
                 break;
@@ -54,7 +58,7 @@ public abstract class LiquidTile extends Tile {
         for (int i = x; i < getWorld().getWidth() - 1; i++) {
             Tile tile = getWorld().getTile(new Position(i, y));
             if (!isSimilarLiquid(tile)) {
-                if (tile.isAir()) {
+                if (tile.isAir() || isDifferentLiquid(tile)) {
                     return false;
                 }
                 break;
@@ -136,6 +140,37 @@ public abstract class LiquidTile extends Tile {
         return tile instanceof LiquidTile && ((LiquidTile) tile).getBuoyancy() == getBuoyancy();
     }
 
+    private boolean isDifferentLiquid(Tile tile) {
+        return tile instanceof LiquidTile && ((LiquidTile) tile).getBuoyancy() != getBuoyancy();
+    }
+
+    private void push(Direction direction) {
+//        Look for the edge
+        Position position = getPosition().direction(direction);
+        while (isSimilarLiquid(getWorld().getTile(position))) {
+            position = position.direction(direction);
+        }
+        position = position.direction(Direction.opposite(direction));
+
+        if (position.equals(getPosition())) {
+            getWorld().swapTiles(position.direction(direction), getPosition());
+            return;
+        }
+
+//        Swap tiles, moving backwards
+        while (!position.equals(getPosition())) {
+//            if (!(isSimilarLiquid(getWorld().getTile(position.direction(direction))) || getWorld().getTile(position.direction(direction)).isAir())) {
+//                return;
+//            }
+            if (!canPush(getWorld().getTile(position.direction(direction)))) {
+                position = position.direction(Direction.opposite(direction));
+                continue;
+            }
+            getWorld().swapTiles(position.direction(direction), position);
+            position = position.direction(Direction.opposite(direction));
+        }
+    }
+
     @Override
     public void update() {
         if (isExtraneous()) {
@@ -163,12 +198,22 @@ public abstract class LiquidTile extends Tile {
         }
 
 //        Diagonal movement, if possible.
-        if (canDisplace(getWorld().getTile(getPosition().down().right()))) {
-            getWorld().swapTiles(getPosition(), getPosition().down().right());
+        Tile downRight = getWorld().getTile(getPosition().down().right());
+        Tile downLeft = getWorld().getTile(getPosition().down().left());
+        if (canDisplace(downRight) && !canDisplace(downLeft)) {
+            getWorld().swapTiles(getPosition(), downRight.getPosition());
             return;
         }
-        if (canDisplace(getWorld().getTile(getPosition().down().left()))) {
-            getWorld().swapTiles(getPosition(), getPosition().down().left());
+        if (canDisplace(downLeft) && !canDisplace(downRight)) {
+            getWorld().swapTiles(getPosition(), downLeft.getPosition());
+            return;
+        }
+        if (canDisplace(downLeft) && canDisplace(downRight)) {
+            if (Randomizer.nextBoolean()) {
+                getWorld().swapTiles(getPosition(), downRight.getPosition());
+            } else {
+                getWorld().swapTiles(getPosition(), downLeft.getPosition());
+            }
             return;
         }
 
@@ -179,10 +224,19 @@ public abstract class LiquidTile extends Tile {
                 if (getWorld().getTile(getPosition().direction(d).down()).isAir()) {
                     getWorld().swapTiles(getPosition(), getPosition().direction(d).down());
                 } else {
-                    getWorld().swapTiles(getPosition(), getPosition().direction(d));
+                    push(d);
                 }
                 return;
             }
+        }
+
+        if (canDisplace(getWorld().getTile(getPosition().right()))) {
+            getWorld().swapTiles(getPosition(), getPosition().right());
+            return;
+        }
+        if (canDisplace(getWorld().getTile(getPosition().left()))) {
+            getWorld().swapTiles(getPosition(), getPosition().left());
+            return;
         }
 
 //        Random horizontal movement

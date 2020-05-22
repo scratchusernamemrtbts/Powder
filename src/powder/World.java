@@ -16,7 +16,6 @@ public class World {
     private boolean updatesSuppressed = true;
 
     private final Tile[][] tiles = new Tile[width][height];
-    private final Tile[] updatingTiles = new Tile[width * height];
     private final List<Tile> checkActive = new ArrayList<>();
 
     public World() {

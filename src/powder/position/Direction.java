@@ -8,6 +8,16 @@ public enum Direction {
     Left,
     Right;
 
+    public static Direction opposite(Direction direction) {
+        switch (direction) {
+            case Up: return Down;
+            case Down: return Up;
+            case Left: return Right;
+            case Right: return Left;
+        }
+        throw new RuntimeException("Unknown direction");
+    }
+
     public static Direction random() {
         switch (Randomizer.nextInt(4)) {
             case 0: return Direction.Up;

@@ -1,6 +1,7 @@
 package powder.tiles;
 
 import powder.World;
+import powder.util.Randomizer;
 
 public abstract class PowderTile extends Tile {
     public PowderTile(World world) {
@@ -38,12 +39,22 @@ public abstract class PowderTile extends Tile {
         }
 
 //        Always move diagonally, if possible.
-        if (canDisplace(getWorld().getTile(getPosition().down().right()))) {
-            getWorld().swapTiles(getPosition(), getPosition().down().right());
+        Tile downRight = getWorld().getTile(getPosition().down().right());
+        Tile downLeft = getWorld().getTile(getPosition().down().left());
+        if (canDisplace(downRight) && !canDisplace(downLeft)) {
+            getWorld().swapTiles(getPosition(), downRight.getPosition());
             return;
         }
-        if (canDisplace(getWorld().getTile(getPosition().down().left()))) {
-            getWorld().swapTiles(getPosition(), getPosition().down().left());
+        if (canDisplace(downLeft) && !canDisplace(downRight)) {
+            getWorld().swapTiles(getPosition(), downLeft.getPosition());
+            return;
+        }
+        if (canDisplace(downLeft) && canDisplace(downRight)) {
+            if (Randomizer.nextBoolean()) {
+                getWorld().swapTiles(getPosition(), downRight.getPosition());
+            } else {
+                getWorld().swapTiles(getPosition(), downLeft.getPosition());
+            }
             return;
         }
 
