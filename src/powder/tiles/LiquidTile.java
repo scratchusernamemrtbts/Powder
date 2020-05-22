@@ -38,14 +38,14 @@ public abstract class LiquidTile extends Tile {
     }
 
     protected boolean canDisplace(Tile tile) {
-        return tile.isAir() || (tile instanceof OilTile && ((LiquidTile) tile).getBuoyancy() > getBuoyancy());
+        return tile.isAir() || (tile instanceof LiquidTile && ((LiquidTile) tile).getBuoyancy() > getBuoyancy());
     }
 
     private boolean isRowFull(int x, int y) {
         for (int i = x; i > 0; i--) {
             Tile tile = getWorld().getTile(new Position(i, y));
             if (!isSimilarLiquid(tile)) {
-                if (!tile.isSolid()) {
+                if (tile.isAir()) {
                     return false;
                 }
                 break;
@@ -54,7 +54,7 @@ public abstract class LiquidTile extends Tile {
         for (int i = x; i < getWorld().getWidth() - 1; i++) {
             Tile tile = getWorld().getTile(new Position(i, y));
             if (!isSimilarLiquid(tile)) {
-                if (!tile.isSolid()) {
+                if (tile.isAir()) {
                     return false;
                 }
                 break;

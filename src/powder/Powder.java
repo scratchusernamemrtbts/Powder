@@ -63,6 +63,18 @@ public class Powder {
             tile = new GravelTile(world);
         } else if (windowFrame.isKeyPressed(Keys.J)) {
             tile = new OilTile(world);
+        } else if (windowFrame.isKeyPressed(Keys.V)) {
+            tile = new VirusTile(world);
+        } else if (windowFrame.isKeyPressed(Keys.M)) {
+            tile = new MercuryTile(world);
+        } else if (windowFrame.isKeyPressed(Keys.N)) {
+            tile = new BlueFireTile(world);
+        } else if (windowFrame.isKeyPressed(Keys.O)) {
+            tile = new MethaneTile(world);
+        } else if (windowFrame.isKeyPressed(Keys.P)) {
+            tile = new BleachTile(world);
+        } else if (windowFrame.isKeyPressed(Keys.E)) {
+            tile = new AirTile(world);
         } else {
             tile = new SandTile(world);
         }

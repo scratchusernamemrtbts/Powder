@@ -17,31 +17,43 @@ public abstract class PowderTile extends Tile {
         return true;
     }
 
+    private boolean canDisplace(Tile tile) {
+        return !tile.isSolid();
+    }
+
+    private boolean canDisplaceDiagonally(Tile tile) {
+        return canDisplace(tile) && !(tile instanceof LiquidTile);
+    }
+
+    private boolean isPushingDown(Tile tile) {
+        return tile.isSolid() && tile.hasGravity();
+    }
+
     @Override
     public void update() {
 //        Always move down, if possible.
-        if (!getWorld().getTile(getPosition().down()).isSolid()) {
+        if (canDisplace(getWorld().getTile(getPosition().down()))) {
             getWorld().swapTiles(getPosition(), getPosition().down());
             return;
         }
 
 //        Always move diagonally, if possible.
-        if (!getWorld().getTile(getPosition().down().right()).isSolid()) {
+        if (canDisplace(getWorld().getTile(getPosition().down().right()))) {
             getWorld().swapTiles(getPosition(), getPosition().down().right());
             return;
         }
-        if (!getWorld().getTile(getPosition().down().left()).isSolid()) {
+        if (canDisplace(getWorld().getTile(getPosition().down().left()))) {
             getWorld().swapTiles(getPosition(), getPosition().down().left());
             return;
         }
 
 //        Move to the side if we are being pushed from above, if possible.
-        if (getWorld().getTile(getPosition().up()).hasGravity() && getWorld().getTile(getPosition().up()).isSolid()) {
-            if (!getWorld().getTile(getPosition().left()).isSolid()) {
+        if (isPushingDown(getWorld().getTile(getPosition().up()))) {
+            if (canDisplaceDiagonally(getWorld().getTile(getPosition().left()))) {
                 getWorld().swapTiles(getPosition(), getPosition().left());
                 return;
             }
-            if (!getWorld().getTile(getPosition().right()).isSolid()) {
+            if (canDisplaceDiagonally(getWorld().getTile(getPosition().right()))) {
                 getWorld().swapTiles(getPosition(), getPosition().right());
                 return;
             }

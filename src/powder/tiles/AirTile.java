@@ -38,4 +38,9 @@ public class AirTile extends Tile {
     public void update() {
         setActive(false);
     }
+
+    @Override
+    public boolean isImmutable() {
+        return true;
+    }
 }

@@ -29,6 +29,10 @@ public abstract class Tile {
         return true;
     }
 
+    public boolean isImmutable() {
+        return false;
+    }
+
     public boolean isAir() {
         return false;
     }

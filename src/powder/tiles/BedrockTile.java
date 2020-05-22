@@ -9,4 +9,9 @@ public class BedrockTile extends SolidTile {
         super(world);
         setColor(new Color(0, 0, 0));
     }
+
+    @Override
+    public boolean isImmutable() {
+        return true;
+    }
 }

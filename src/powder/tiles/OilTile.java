@@ -13,7 +13,7 @@ public class OilTile extends LiquidTile {
 
     @Override
     public void evaporate() {
-        getWorld().setTile(getPosition(), new AirTile(getWorld()));
+        getWorld().setTile(getPosition(), new MethaneTile(getWorld()));
     }
 
     @Override

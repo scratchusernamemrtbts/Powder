@@ -21,16 +21,28 @@ public class FireTile extends Tile {
         return false;
     }
 
+    protected double effectiveFlammability(Tile tile) {
+        return tile.getFlammability();
+    }
+
+    protected void spreadFire(Position position) {
+        getWorld().setTile(position, new FireTile(getWorld()));
+    }
+
+    protected boolean smotheredBy(Tile tile) {
+        return tile instanceof WaterTile;
+    }
+
     private void checkNeighbor(Position position) {
         Tile tile = getWorld().getTile(position);
 
-        if (tile instanceof WaterTile) {
+        if (smotheredBy(tile)) {
             getWorld().setTile(getPosition(), new AirTile(getWorld()));
             removed = true;
             return;
         }
 
-        if (tile instanceof AirTile) {
+        if (tile.isAir()) {
             airNearby++;
         }
 
@@ -38,9 +50,10 @@ public class FireTile extends Tile {
             return;
         }
 
-        if (tile.getFlammability() > 0) {
-            if (Randomizer.nextDouble() < tile.getFlammability()) {
-                getWorld().setTile(position, new FireTile(getWorld()));
+        double flammability = effectiveFlammability(tile);
+        if (flammability > 0) {
+            if (Randomizer.nextDouble() < flammability) {
+                spreadFire(position);
             }
         }
     }
