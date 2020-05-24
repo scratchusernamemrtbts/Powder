@@ -185,12 +185,6 @@ public abstract class LiquidTile extends Tile {
             extraneousTicks = 0;
         }
 
-//        Check for floating
-        if (floatsOn(getWorld().getTile(getPosition().up()))) {
-            getWorld().swapTiles(getPosition(), getPosition().up());
-            return;
-        }
-
 //        Always move down, if possible.
         if (canDisplace(getWorld().getTile(getPosition().down()))) {
             getWorld().swapTiles(getPosition(), getPosition().down());

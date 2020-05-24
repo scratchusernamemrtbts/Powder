@@ -1,36 +1,44 @@
 package powder;
 
 import powder.position.Position;
-import powder.tiles.*;
-import powder.ui.Keys;
-import powder.ui.Renderer;
-import powder.ui.WindowFrame;
-
-import java.awt.*;
+import powder.tiles.SandTile;
+import powder.tiles.WaterTile;
+import powder.ui.ConsoleInterface;
+import powder.ui.Interface;
+import powder.ui.WindowInterface;
 
 public class Powder {
-
-    private final World world = new World();
-    private final WindowFrame windowFrame = new WindowFrame();
-    private final Renderer renderer = new Renderer(this);
-    private int frame = 0;
-
-    private long timer = System.currentTimeMillis();
+    private final World world;
+    private final Interface ui;
 
     public Powder() {
-//        ThreadManager.runLoop(renderer::render);
-//        ThreadManager.runLoop(this::update);
+        world = new World(200, 100);
+        ui = new WindowInterface(this);
+//        world = new World(40, 40);
+//        ui = new ConsoleInterface(this);
+
+//        for (int x = 20; x < 30; x++) {
+//            for (int y = 10; y < 30; y++) {
+//                world.setTile(new Position(x, y), new SandTile(world));
+//            }
+//        }
+//        for (int x = 20; x < 30; x++) {
+//            for (int y = 31; y < 39; y++) {
+//                world.setTile(new Position(x, y), new WaterTile(world));
+//            }
+//        }
     }
 
     public void start() {
-        windowFrame.setVisible(true);
+        ui.start();
+
         while (true) {
             try {
                 update();
             } catch (RuntimeException e) {
                 e.printStackTrace();
             }
-            if (!windowFrame.isKeyPressed(Keys.SPACE)) {
+            if (!ui.isTurbo()) {
                 try {
                     Thread.sleep(14);
                 } catch (InterruptedException e) {
@@ -40,82 +48,17 @@ public class Powder {
         }
     }
 
-    private void placeTile(Position position) {
-        if (position.getX() <= 0 || position.getY() <= 0 || position.getX() >= world.getWidth() - 1 || position.getY() >= world.getHeight() - 1) {
-            return;
-        }
-        Tile tile;
-        if (windowFrame.isKeyPressed(Keys.A)) {
-            tile = new WaterTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.B)) {
-            tile = new BedrockTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.C)) {
-            tile = new FuseTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.D)) {
-            tile = new GunpowderTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.F)) {
-            tile = new FireTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.G)) {
-            tile = new DirtTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.H)) {
-            tile = new GrassTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.I)) {
-            tile = new GravelTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.J)) {
-            tile = new OilTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.V)) {
-            tile = new VirusTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.M)) {
-            tile = new MercuryTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.N)) {
-            tile = new BlueFireTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.O)) {
-            tile = new MethaneTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.P)) {
-            tile = new BleachTile(world);
-        } else if (windowFrame.isKeyPressed(Keys.E)) {
-            tile = new AirTile(world);
-        } else {
-            tile = new SandTile(world);
-        }
-        world.setTile(position, tile);
-    }
-
     public void update() {
-        frame++;
-
-        Point mousePosition = windowFrame.getMousePosition();
-        if (mousePosition != null) {
-            if (windowFrame.isMouseDown()) {
-                Position p = new Position(mousePosition.x / renderer.getTileWidth(), (windowFrame.getSize().height - mousePosition.y) / renderer.getTileHeight());
-                placeTile(p);
-                placeTile(p.left());
-                placeTile(p.left().down());
-                placeTile(p.down());
-            }
-        }
-
-//        long start = System.currentTimeMillis();
+        ui.update();
         world.update();
-//        long startRender = System.currentTimeMillis();
-        renderer.render();
-//        long end = System.currentTimeMillis();
-
-        if (System.currentTimeMillis() - timer > 1000) {
-            timer = System.currentTimeMillis();
-            windowFrame.setTitle(frame + " fps");
-            frame = 0;
-        }
-
-//        System.out.println("update in: " + (startRender - start));
-//        System.out.println("render in: " + (end - startRender));
+        ui.render();
     }
 
     public World getWorld() {
         return world;
     }
 
-    public WindowFrame getWindowFrame() {
-        return windowFrame;
+    public Interface getUi() {
+        return ui;
     }
 }

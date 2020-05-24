@@ -2,7 +2,6 @@ package powder;
 
 import powder.position.Position;
 import powder.tiles.*;
-import powder.util.Randomizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,15 +9,17 @@ import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class World {
-    private final int width = 200;
-    private final int height = 100;
-
+    private final int width;
+    private final int height;
+    private final Tile[][] tiles;
+    private final List<Tile> checkActive = new ArrayList<>();
     private boolean updatesSuppressed = true;
 
-    private final Tile[][] tiles = new Tile[width][height];
-    private final List<Tile> checkActive = new ArrayList<>();
+    public World(int width, int height) {
+        this.width = width;
+        this.height = height;
+        tiles = new Tile[width][height];
 
-    public World() {
 //        Init air powder.tiles
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -35,29 +36,6 @@ public class World {
             setTile(new Position(0, y), new BedrockTile(this));
             setTile(new Position(getWidth() - 1, y), new BedrockTile(this));
         }
-//        setTile(new powder.position.Position(3, 1), new powder.powder.tiles.SolidTile(this));
-//        Some sand
-//        setTile(new powder.position.Position(2, 7), new powder.powder.tiles.SandTile(this));
-//        setTile(new powder.position.Position(3, 4), new powder.powder.tiles.SandTile(this));
-//        setTile(new powder.position.Position(3, 5), new powder.powder.tiles.SandTile(this));
-//        setTile(new powder.position.Position(3, 6), new powder.tiles.SandTile(this));
-//        setTile(new powder.position.Position(3, 7), new powder.tiles.SandTile(this));
-//        setTile(new powder.position.Position(4, 4), new powder.tiles.SandTile(this));
-//        setTile(new powder.position.Position(4, 5), new powder.tiles.SandTile(this));
-//        setTile(new powder.position.Position(5, 8), new powder.tiles.SandTile(this));
-
-//        for (int x = 20; x < 30; x++) {
-//            for (int y = 10; y < 70; y++) {
-//                setTile(new Position(x, y), new SandTile(this));
-//            }
-//        }
-
-//        for (int x = 35; x < 55; x++) {
-//            for (int y = 10; y < 70; y++) {
-//                setTile(new powder.position.Position(x, y), new powder.powder.tiles.WaterTile(this));
-//            }
-//        }
-//        setTile(new powder.position.Position(2, 5), new powder.tiles.SandTile(this));
     }
 
     private static void shuffleArray(Tile[] array, int size) {

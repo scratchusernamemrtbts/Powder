@@ -7,16 +7,16 @@ import powder.tiles.Tile;
 import javax.swing.*;
 import java.awt.*;
 
-public class Renderer extends JPanel {
+public class FrameRenderer extends JPanel {
     private final Powder powder;
 
     private final int TILE_WIDTH = 5;
     private final int TILE_HEIGHT = 5;
 
-    public Renderer(Powder powder) {
+    public FrameRenderer(JFrame ui, Powder powder) {
         this.powder = powder;
-        powder.getWindowFrame().add(this);
-        powder.getWindowFrame().pack();
+        ui.add(this);
+        ui.pack();
     }
 
     public Dimension getPreferredSize() {
