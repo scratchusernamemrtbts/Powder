@@ -14,4 +14,9 @@ public class BedrockTile extends SolidTile {
     public boolean isImmutable() {
         return true;
     }
+
+    @Override
+    public char getChar() {
+        return '█';
+    }
 }

@@ -2,14 +2,15 @@ package powder.ui;
 
 import powder.Powder;
 import powder.World;
+import powder.tiles.AirTile;
 import powder.tiles.Tile;
 
 import java.awt.*;
 
-public class ConsoleInterface implements Interface {
+public class ColoredConsoleInterface implements Interface {
     private final Powder powder;
 
-    public ConsoleInterface(Powder powder) {
+    public ColoredConsoleInterface(Powder powder) {
         this.powder = powder;
     }
 
@@ -33,7 +34,7 @@ public class ConsoleInterface implements Interface {
             Color lastColor = null;
             for (int x = 0; x < world.getWidth(); x++) {
                 Tile tile = world.getTile(x, y);
-                if (tile.isAir()) {
+                if (tile instanceof AirTile) {
                     if (lastColor == null) {
                         output.append(" ");
                     } else {
@@ -58,6 +59,11 @@ public class ConsoleInterface implements Interface {
 
     @Override
     public boolean isTurbo() {
+        return false;
+    }
+
+    @Override
+    public boolean isPaused() {
         return false;
     }
 }

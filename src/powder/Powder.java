@@ -3,7 +3,7 @@ package powder;
 import powder.position.Position;
 import powder.tiles.SandTile;
 import powder.tiles.WaterTile;
-import powder.ui.ConsoleInterface;
+import powder.ui.BasicConsoleInterface;
 import powder.ui.Interface;
 import powder.ui.WindowInterface;
 
@@ -14,9 +14,9 @@ public class Powder {
     public Powder() {
         world = new World(200, 100);
         ui = new WindowInterface(this);
-//        world = new World(40, 40);
-//        ui = new ConsoleInterface(this);
 
+//        world = new World(40, 40);
+//        ui = new BasicConsoleInterface(this);
 //        for (int x = 20; x < 30; x++) {
 //            for (int y = 10; y < 30; y++) {
 //                world.setTile(new Position(x, y), new SandTile(world));
@@ -50,7 +50,9 @@ public class Powder {
 
     public void update() {
         ui.update();
-        world.update();
+        if (!ui.isPaused()) {
+            world.update();
+        }
         ui.render();
     }
 

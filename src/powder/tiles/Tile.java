@@ -21,6 +21,10 @@ public abstract class Tile {
         return color;
     }
 
+    public char getChar() {
+        return '?';
+    }
+
     public void setColor(Color color) {
         this.color = color;
     }

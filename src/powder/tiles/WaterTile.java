@@ -15,4 +15,9 @@ public class WaterTile extends LiquidTile {
     public double getBuoyancy() {
         return 1.0;
     }
+
+    @Override
+    public char getChar() {
+        return '^';
+    }
 }

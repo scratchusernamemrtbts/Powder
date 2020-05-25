@@ -19,22 +19,27 @@ public class World {
         this.width = width;
         this.height = height;
         tiles = new Tile[width][height];
+        reset();
+    }
 
-//        Init air powder.tiles
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                setTile(new Position(x, y), new AirTile(this));
+    public void reset() {
+        synchronized (this) {
+//        Init air tiles
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    setTile(new Position(x, y), new AirTile(this));
+                }
             }
-        }
 //        Add floor, ceiling
-        for (int x = 0; x < width; x++) {
-            setTile(new Position(x, 0), new BedrockTile(this));
-            setTile(new Position(x, getHeight() - 1), new BedrockTile(this));
-        }
+            for (int x = 0; x < width; x++) {
+                setTile(new Position(x, 0), new BedrockTile(this));
+                setTile(new Position(x, getHeight() - 1), new BedrockTile(this));
+            }
 //        Add walls
-        for (int y = 0; y < height; y++) {
-            setTile(new Position(0, y), new BedrockTile(this));
-            setTile(new Position(getWidth() - 1, y), new BedrockTile(this));
+            for (int y = 0; y < height; y++) {
+                setTile(new Position(0, y), new BedrockTile(this));
+                setTile(new Position(getWidth() - 1, y), new BedrockTile(this));
+            }
         }
     }
 
@@ -49,26 +54,28 @@ public class World {
     }
 
     public void update() {
-        updatesSuppressed = false;
-        for (Tile t : checkActive) {
-            t.setActive(true);
-        }
-        checkActive.clear();
+        synchronized (this) {
+            updatesSuppressed = false;
+            for (Tile t : checkActive) {
+                t.setActive(true);
+            }
+            checkActive.clear();
 
-        Tile[] updatingTiles = new Tile[width * height];
-        int totalTiles = 0;
-        for (int x = 0; x < width; x++) {
-            for (Tile tile : tiles[x]) {
-                if (tile.isActive()) {
-                    updatingTiles[totalTiles] = tile;
-                    totalTiles++;
+            Tile[] updatingTiles = new Tile[width * height];
+            int totalTiles = 0;
+            for (int x = 0; x < width; x++) {
+                for (Tile tile : tiles[x]) {
+                    if (tile.isActive()) {
+                        updatingTiles[totalTiles] = tile;
+                        totalTiles++;
+                    }
                 }
             }
-        }
-        shuffleArray(updatingTiles, totalTiles);
+            shuffleArray(updatingTiles, totalTiles);
 
-        for (int i = 0; i < totalTiles; i++) {
-            updatingTiles[i].update();
+            for (int i = 0; i < totalTiles; i++) {
+                updatingTiles[i].update();
+            }
         }
     }
 

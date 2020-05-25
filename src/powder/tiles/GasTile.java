@@ -55,4 +55,9 @@ public abstract class GasTile extends Tile {
             }
         }
     }
+
+    @Override
+    public char getChar() {
+        return '*';
+    }
 }

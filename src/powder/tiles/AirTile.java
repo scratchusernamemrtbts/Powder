@@ -43,4 +43,9 @@ public class AirTile extends Tile {
     public boolean isImmutable() {
         return true;
     }
+
+    @Override
+    public char getChar() {
+        return ' ';
+    }
 }

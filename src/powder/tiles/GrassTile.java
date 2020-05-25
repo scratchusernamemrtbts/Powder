@@ -40,7 +40,7 @@ public class GrassTile extends PowderTile {
                 if (isNearSky(position)) {
                     getWorld().setTile(position, new GrassTile(getWorld()));
                     if (getWorld().getTile(position.up()).isAir()) {
-                        if (Randomizer.nextDouble() < 0.1) {
+                        if (Randomizer.nextDouble() < 0.2) {
                             getWorld().setTile(position.up(), new TallGrassTile(getWorld(), Randomizer.nextInt(2) + 2));
                         }
                     }

@@ -4,6 +4,6 @@ public interface Interface {
     void start();
     void update();
     void render();
-
     boolean isTurbo();
+    boolean isPaused();
 }

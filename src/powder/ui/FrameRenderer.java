@@ -16,7 +16,6 @@ public class FrameRenderer extends JPanel {
     public FrameRenderer(JFrame ui, Powder powder) {
         this.powder = powder;
         ui.add(this);
-        ui.pack();
     }
 
     public Dimension getPreferredSize() {
