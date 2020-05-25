@@ -24,6 +24,7 @@ public class WindowInterface extends JFrame implements MouseListener, KeyListene
     private boolean turbo = false;
     private final Map<String, JMenuItem> menuItemKeyMap = new HashMap<>();
     private TileDatabase.TileInfo currentTileInfo;
+    public JMenu tilesMenu;
 
     public WindowInterface(Powder powder) {
         super("Powder");
@@ -69,7 +70,7 @@ public class WindowInterface extends JFrame implements MouseListener, KeyListene
         });
         world.add(reset);
 
-        JMenu tilesMenu = new JMenu("Tiles");
+        tilesMenu = new JMenu("Tiles");
         menuBar.add(tilesMenu);
 
         ButtonGroup tileGroup = new ButtonGroup();

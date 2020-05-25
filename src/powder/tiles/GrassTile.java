@@ -5,14 +5,16 @@ import powder.position.Position;
 import powder.util.ColorRandomizer;
 import powder.util.Randomizer;
 
+import javax.security.auth.login.FailedLoginException;
 import java.awt.*;
 
 public class GrassTile extends PowderTile {
     private int dirtNeighbors = 0;
+    private int failures = 0;
 
     public GrassTile(World world) {
         super(world);
-        setColor(ColorRandomizer.randomize(new Color(0, 156, 0), 30, 30, 30));
+        setColor(ColorRandomizer.uniform(new Color(0, 156, 0), 30));
     }
 
     @Override
@@ -65,9 +67,12 @@ public class GrassTile extends PowderTile {
         checkNeighbor(getPosition().left());
         checkNeighbor(getPosition().right());
 
-//        if (!isActive()) {
-//            setActive(dirtNeighbors > 0);
-//        }
-        setActive(true);
+        if (dirtNeighbors == 0) {
+            failures++;
+        } else {
+            failures = 0;
+        }
+
+        setActive(isActive() || failures < 20);
     }
 }
