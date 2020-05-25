@@ -17,6 +17,17 @@ public class VirusTile extends SolidTile {
 
     @Override
     public void update() {
+        if (failures % 10 == 0) {
+            if (getWorld().getTile(getPosition().up()) instanceof VirusTile &&
+                    getWorld().getTile(getPosition().down()) instanceof VirusTile &&
+                    getWorld().getTile(getPosition().left()) instanceof VirusTile &&
+                    getWorld().getTile(getPosition().right()) instanceof VirusTile
+            ) {
+                setActive(false);
+                return;
+            }
+        }
+
         if (Randomizer.nextDouble() < 0.1) {
             return;
         }
